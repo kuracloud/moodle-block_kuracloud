@@ -23,17 +23,15 @@ php:
   - 7.1
 
 env:
-  global:
-    # - MOODLE_BRANCH=MOODLE_31_STABLE
-    # - MOODLE_BRANCH=MOODLE_32_STABLE
-    - MOODLE_BRANCH=MOODLE_33_STABLE
   matrix:
-    # - DB=pgsql
-    - DB=mysqli
+    - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install node
+  - nvm install 8.9
+  - nvm use 8.9
   - cd ../..
   - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
