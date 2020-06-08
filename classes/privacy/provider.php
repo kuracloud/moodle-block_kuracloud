@@ -61,7 +61,13 @@ class provider implements
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid) : contextlist {
+        $contextlist = new contextlist();
 
+        if ($DB->record_exists('block_kuracloud_users', ['userid' => $userid])) {
+            $contextlist->add_system_context();
+        }
+        return $contextlist;
+        
     }
 
 
@@ -71,8 +77,17 @@ class provider implements
      * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination.
      */
     public static function get_users_in_context(userlist $userlist) {
+        $context = $userlist->get_context();
+        if (!$context instanceof \context_system) {
+            return;
+        }
 
-    }
+        // add_users, get users direct or do SQL query? add_from_sql is probably better since using the 
+        // $params = [];
+        // $sql = "SELECT u.userid
+        //     FROM {block_kuracloud_users} u;
+        // $userlist->add_from_sql('userid', $sql, $params);
+}
 
 
     /**
