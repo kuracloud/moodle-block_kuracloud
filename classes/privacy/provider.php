@@ -31,6 +31,7 @@ class provider implements
     \core_privacy\local\request\core_userlist_provider {
 
     public static function get_metadata(collection $collection) : collection {
+        // Describe the data we are storing locally
         $collection->add_database_table(
             'block_kuracloud_users',
             [
@@ -40,6 +41,14 @@ class provider implements
             ],
             'privacy:metadata:block_kuracloud_users'
         );
+
+        // Describe the data exported to kuraCloud
+        $collection->add_external_location_link('kuracloud_sync', [
+            'firstname' => 'privacy:metadata:kuracloud_sync:firstname',
+            'lastname' => 'privacy:metadata:kuracloud_sync:lastname',
+            'idnumber' => 'privacy:metadata:kuracloud_sync:idnumber',
+            'email' => 'privacy:metadata:kuracloud_sync:email',
+        ], 'privacy:metadata:kuracloud_sync');
 
         return $collection;
     }
