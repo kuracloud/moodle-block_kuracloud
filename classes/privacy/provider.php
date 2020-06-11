@@ -64,10 +64,12 @@ class provider implements
         $contextlist = new contextlist();
 
         if ($DB->record_exists('block_kuracloud_users', ['userid' => $userid])) {
-            $contextlist->add_system_context();
+            // $contextlist->add_system_context();
+            $contextlist->add_user_context($userid);
+            // Look up course context????
         }
         return $contextlist;
-        
+
     }
 
 
@@ -82,7 +84,7 @@ class provider implements
             return;
         }
 
-        // add_users, get users direct or do SQL query? add_from_sql is probably better since using the 
+        // add_users, get users direct or do SQL query? add_from_sql is probably better since using the
         // $params = [];
         // $sql = "SELECT u.userid
         //     FROM {block_kuracloud_users} u;
@@ -96,7 +98,32 @@ class provider implements
      * @param   approved_contextlist    $contextlist    The approved contexts to export information for.
      */
     public static function export_user_data(approved_contextlist $contextlist) {
+        if (empty($contextlist->count())) {
+            return;
+        }
 
+        $user = $contextlist->get_user();
+
+        // Test context ????
+
+        // https://wimski.org/api/3.8/d7/d9c/classcore__privacy_1_1local_1_1request_1_1writer.html
+        // writer::with_context returns content_writer
+
+        // https://wimski.org/api/3.8/dd/d21/interfacecore__privacy_1_1local_1_1request_1_1content__writer.html
+        // export_data(array $subcontext, stdClass $data)
+        // export_metadataarray(array $subcontext, string $name, $value, string	$description)
+
+        // foreach ($contextlist->get_contexts() as $context) {
+            // join over block_kuracloud_users and block_kuracloud_courses to map from course to user?
+            // $records = $DB->get_records('block_kuracloud_users', array('userid' => $user->id));
+            // writer::with_context(context_user::instance($user->id))->export_data([], $records);
+            // writer::with_context(context_system)->export_data([], $records);
+        // }
+        $dummy = (object) [
+            'kura_name' => format_string("foo bar", true)
+        ];
+        // writer::with_context(context_system)->export_data([], $dummy);
+        writer::with_context(context_user::instance($user->id))->export_data([], $dummy);
     }
 
 
