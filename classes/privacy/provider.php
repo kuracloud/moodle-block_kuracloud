@@ -87,9 +87,9 @@ class provider implements
         // add_users, get users direct or do SQL query? add_from_sql is probably better since using the
         // $params = [];
         // $sql = "SELECT u.userid
-        //     FROM {block_kuracloud_users} u;
+        // FROM {block_kuracloud_users} u;
         // $userlist->add_from_sql('userid', $sql, $params);
-}
+    }
 
 
     /**
