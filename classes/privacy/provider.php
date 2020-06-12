@@ -65,12 +65,7 @@ class provider implements
         global $DB;
         $contextlist = new contextlist();
 
-        // if ($DB->record_exists('block_kuracloud_users', ['userid' => $userid])) {
-        //     $contextlist->add_system_context();
-        //     $contextlist->add_user_context($userid);
-        //     // Look up course context????
-        // }
-
+        // Add the contexts for this user still associated with courses
         $sql = "SELECT context.id
                   FROM {context} context
             INNER JOIN {course} course on course.id = context.instanceid AND (context.contextlevel = :contextlevel)
@@ -78,13 +73,13 @@ class provider implements
             INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
                  WHERE kc_users.userid = :userid
         ";
-
         $params = [
             'contextlevel' => CONTEXT_COURSE,
             'userid' => $userid,
         ];
-
         $contextlist->add_from_sql($sql, $params);
+
+        // We could add the block_kuracloud_users that are not longer associate with a course to the user or system context?
 
         return $contextlist;
     }
@@ -120,6 +115,7 @@ class provider implements
         }
 
         $userid = $contextlist->get_user()->id;
+        global $DB;
 
         // Test context ????
 
@@ -139,24 +135,27 @@ class provider implements
 
         // writer::with_context(\context_user::instance($user->id))->export_data([], $user);
 
+        // Might add context for non-course, so widen search????
+        $sql = "SELECT kc_courses.courseid, kc_users.userid, kc_users.remote_studentid
+                  FROM {block_kuracloud_courses} kc_courses
+            INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
+                 WHERE kc_users.userid = :userid
+        ";
+        $params = [
+            'userid' => $userid,
+        ];
+
+        $course_user_details = $DB->get_records_sql($sql, $params);
 
         foreach ($contextlist->get_contexts() as $context) {
-            // if ($context.contextlevel != CONTEXT_COURSE) {
-            //     return;
-            // }
-            // Lookup remote user id!
-            // KISS experiment
-            $data = new \stdClass();
-            $data->courseid = $context->instanceid;
-            $data->userid = $userid;
-            echo "export_user_data calling export_data+\n";
-            writer::with_context($context)->export_data(['kura-meta-data'], $data);
-            echo "export_user_data calling export_data-\n";
-
-            // Can add description like
-            //         writer::with_context($context)->export_data([get_string('privacy:path:submission', 'checkmark')], $data);
+            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($context->instanceid, $course_user_details)) {
+                $data = new \stdClass();
+                $data->moodle_userid = $course_user_details[$context->instanceid]->userid;
+                $data->kuracloud_studentid = $course_user_details[$context->instanceid]->remote_studentid;
+                // studentid is within instance and course, but not much value in adding them to exported data.
+                writer::with_context($context)->export_data(['kuraCloud'], $data);
+            }
         }
-
     }
 
 
