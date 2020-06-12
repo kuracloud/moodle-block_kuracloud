@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace block_kuracloud\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
 use \core_privacy\local\metadata\collection;
@@ -61,15 +62,31 @@ class provider implements
      * @return  contextlist   $contextlist  The list of contexts used in this plugin.
      */
     public static function get_contexts_for_userid(int $userid) : contextlist {
+        global $DB;
         $contextlist = new contextlist();
 
-        if ($DB->record_exists('block_kuracloud_users', ['userid' => $userid])) {
-            // $contextlist->add_system_context();
-            $contextlist->add_user_context($userid);
-            // Look up course context????
-        }
-        return $contextlist;
+        // if ($DB->record_exists('block_kuracloud_users', ['userid' => $userid])) {
+        //     $contextlist->add_system_context();
+        //     $contextlist->add_user_context($userid);
+        //     // Look up course context????
+        // }
 
+        $sql = "SELECT context.id
+                  FROM {context} context
+            INNER JOIN {course} course on course.id = context.instanceid AND (context.contextlevel = :contextlevel)
+            INNER JOIN {block_kuracloud_courses} kc_courses on kc_courses.courseid = course.id
+            INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
+                 WHERE kc_users.userid = :userid
+        ";
+
+        $params = [
+            'contextlevel' => CONTEXT_COURSE,
+            'userid' => $userid,
+        ];
+
+        $contextlist->add_from_sql($sql, $params);
+
+        return $contextlist;
     }
 
 
@@ -102,7 +119,7 @@ class provider implements
             return;
         }
 
-        $user = $contextlist->get_user();
+        $userid = $contextlist->get_user()->id;
 
         // Test context ????
 
@@ -119,11 +136,27 @@ class provider implements
             // writer::with_context(context_user::instance($user->id))->export_data([], $records);
             // writer::with_context(context_system)->export_data([], $records);
         // }
-        $dummy = (object) [
-            'kura_name' => format_string("foo bar", true)
-        ];
-        // writer::with_context(context_system)->export_data([], $dummy);
-        writer::with_context(context_user::instance($user->id))->export_data([], $dummy);
+
+        // writer::with_context(\context_user::instance($user->id))->export_data([], $user);
+
+
+        foreach ($contextlist->get_contexts() as $context) {
+            // if ($context.contextlevel != CONTEXT_COURSE) {
+            //     return;
+            // }
+            // Lookup remote user id!
+            // KISS experiment
+            $data = new \stdClass();
+            $data->courseid = $context->instanceid;
+            $data->userid = $userid;
+            echo "export_user_data calling export_data+\n";
+            writer::with_context($context)->export_data(['kura-meta-data'], $data);
+            echo "export_user_data calling export_data-\n";
+
+            // Can add description like
+            //         writer::with_context($context)->export_data([get_string('privacy:path:submission', 'checkmark')], $data);
+        }
+
     }
 
 
