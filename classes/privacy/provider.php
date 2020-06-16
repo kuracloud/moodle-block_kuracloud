@@ -121,14 +121,14 @@ class provider implements
             'userid' => $userid,
         ];
 
-        $course_user_details = $DB->get_records_sql($sql, $params);
+        $details = $DB->get_records_sql($sql, $params);
 
         // Export the course related user information
         foreach ($contextlist->get_contexts() as $context) {
-            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($context->instanceid, $course_user_details)) {
+            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($context->instanceid, $details)) {
                 $data = new \stdClass();
-                $data->moodle_userid = $course_user_details[$context->instanceid]->userid;
-                $data->kuracloud_studentid = $course_user_details[$context->instanceid]->remote_studentid;
+                $data->moodle_userid = $details[$context->instanceid]->userid;
+                $data->kuracloud_studentid = $details[$context->instanceid]->remote_studentid;
                 // studentid is within instance and course, but not much value in adding them to exported data.
                 writer::with_context($context)->export_data(['kuraCloud'], $data);
             }
