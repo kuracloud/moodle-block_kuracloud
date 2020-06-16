@@ -79,7 +79,7 @@ class provider implements
         ];
         $contextlist->add_from_sql($sql, $params);
 
-        // We could add the block_kuracloud_users that are not longer associate with a course to the user or system context?
+        // We could add the block_kuracloud_users that are no longer associated with a course to the user context????
 
         return $contextlist;
     }
@@ -92,14 +92,9 @@ class provider implements
      */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
-        if (!$context instanceof \context_system) {
-            return;
-        }
 
-        // add_users, get users direct or do SQL query? add_from_sql is probably better since using the
-        // $params = [];
-        // $sql = "SELECT u.userid
-        // FROM {block_kuracloud_users} u;
+        // Do a query like in get_contexts_for_userid ???? Test in some other routine we can get called!
+
         // $userlist->add_from_sql('userid', $sql, $params);
     }
 
@@ -117,25 +112,6 @@ class provider implements
         $userid = $contextlist->get_user()->id;
         global $DB;
 
-        // Test context ????
-
-        // https://wimski.org/api/3.8/d7/d9c/classcore__privacy_1_1local_1_1request_1_1writer.html
-        // writer::with_context returns content_writer
-
-        // https://wimski.org/api/3.8/dd/d21/interfacecore__privacy_1_1local_1_1request_1_1content__writer.html
-        // export_data(array $subcontext, stdClass $data)
-        // export_metadataarray(array $subcontext, string $name, $value, string	$description)
-
-        // foreach ($contextlist->get_contexts() as $context) {
-            // join over block_kuracloud_users and block_kuracloud_courses to map from course to user?
-            // $records = $DB->get_records('block_kuracloud_users', array('userid' => $user->id));
-            // writer::with_context(context_user::instance($user->id))->export_data([], $records);
-            // writer::with_context(context_system)->export_data([], $records);
-        // }
-
-        // writer::with_context(\context_user::instance($user->id))->export_data([], $user);
-
-        // Might add context for non-course, so widen search????
         $sql = "SELECT kc_courses.courseid, kc_users.userid, kc_users.remote_studentid
                   FROM {block_kuracloud_courses} kc_courses
             INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
@@ -147,6 +123,7 @@ class provider implements
 
         $course_user_details = $DB->get_records_sql($sql, $params);
 
+        // Export the course related user information
         foreach ($contextlist->get_contexts() as $context) {
             if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($context->instanceid, $course_user_details)) {
                 $data = new \stdClass();
