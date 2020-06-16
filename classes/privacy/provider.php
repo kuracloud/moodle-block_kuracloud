@@ -112,6 +112,7 @@ class provider implements
         $userid = $contextlist->get_user()->id;
         global $DB;
 
+        // Get a map from courseid to the user PII
         $sql = "SELECT kc_courses.courseid, kc_users.userid, kc_users.remote_studentid
                   FROM {block_kuracloud_courses} kc_courses
             INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
@@ -120,15 +121,15 @@ class provider implements
         $params = [
             'userid' => $userid,
         ];
-
         $details = $DB->get_records_sql($sql, $params);
 
         // Export the course related user information
         foreach ($contextlist->get_contexts() as $context) {
-            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($context->instanceid, $details)) {
+            $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
+            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $data = new \stdClass();
-                $data->moodle_userid = $details[$context->instanceid]->userid;
-                $data->kuracloud_studentid = $details[$context->instanceid]->remote_studentid;
+                $data->moodle_userid = $details[$courseid]->userid;
+                $data->kuracloud_studentid = $details[$courseid]->remote_studentid;
                 // studentid is within instance and course, but not much value in adding them to exported data.
                 writer::with_context($context)->export_data(['kuraCloud'], $data);
             }
@@ -147,7 +148,30 @@ class provider implements
 
 
     public static function delete_data_for_user(approved_contextlist $contextlist) {
+        if (empty($contextlist->count())) {
+            return;
+        }
 
+        global $DB;
+        $userid = $contextlist->get_user()->id;
+
+        // Get a map from courseid to the related user record
+        $sql = "SELECT kc_courses.courseid, kc_users.id
+                  FROM {block_kuracloud_courses} kc_courses
+            INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
+                 WHERE kc_users.userid = :userid
+        ";
+        $params = [
+            'userid' => $userid,
+        ];
+        $details = $DB->get_records_sql($sql, $params);
+
+        foreach ($contextlist->get_contexts() as $context) {
+            $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
+            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($courseid, $details)) {
+                $DB->delete_records('block_kuracloud_users', ['id' => $details[$courseid]->id, 'userid' => $userid]);
+            }
+        }
     }
 
 
