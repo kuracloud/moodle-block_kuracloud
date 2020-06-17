@@ -92,10 +92,20 @@ class provider implements
      */
     public static function get_users_in_context(userlist $userlist) {
         $context = $userlist->get_context();
+        if ($context->contextlevel !== CONTEXT_COURSE) {
+            return;
+        }
 
-        // Do a query like in get_contexts_for_userid ???? Test in some other routine we can get called!
+        $sql = "SELECT kc_users.userid
+                  FROM {block_kuracloud_courses} kc_courses
+            INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
+                 WHERE kc_courses.courseid = :courseid
+        ";
+        $params = [
+            'courseid' => $context->instanceid,
+        ];
 
-        // $userlist->add_from_sql('userid', $sql, $params);
+        $userlist->add_from_sql('userid', $sql, $params);
     }
 
 
@@ -126,7 +136,7 @@ class provider implements
         // Export the course related user information
         foreach ($contextlist->get_contexts() as $context) {
             $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
-            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($courseid, $details)) {
+            if ($context->contextlevel === CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $data = new \stdClass();
                 $data->moodle_userid = $details[$courseid]->userid;
                 $data->kuracloud_studentid = $details[$courseid]->remote_studentid;
@@ -168,7 +178,7 @@ class provider implements
 
         foreach ($contextlist->get_contexts() as $context) {
             $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
-            if ($context->contextlevel = CONTEXT_COURSE && array_key_exists($courseid, $details)) {
+            if ($context->contextlevel === CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $DB->delete_records('block_kuracloud_users', ['id' => $details[$courseid]->id, 'userid' => $userid]);
             }
         }
