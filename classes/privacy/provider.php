@@ -199,6 +199,21 @@ class provider implements
      * @param approved_userlist $userlist The approved context and user information to delete information for.
      */
     public static function delete_data_for_users(approved_userlist $userlist) {
+        if (empty($userlist->count())) {
+            return;
+        }
+        $context = $userlist->get_context();
+        if ($context->contextlevel !== CONTEXT_COURSE) {
+            return;
+        }
 
+        global $DB;
+        $mapping = $DB->get_record('block_kuracloud_courses', array('courseid' => $context->instanceid));
+        if ($mapping) {
+            list($userinsql, $userinparams) = $DB->get_in_or_equal($userlist->get_userids(), SQL_PARAMS_NAMED);
+            $params = array_merge(['remote_instanceid' => $mapping->remote_instanceid, 'remote_courseid' => $mapping->remote_courseid], $userinparams);
+            $sql = "remote_instanceid = :remote_instanceid AND remote_courseid = :remote_courseid AND userid {$userinsql}";
+            $DB->delete_records_select('block_kuracloud_users', $sql, $params);
+        }
     }
 }
