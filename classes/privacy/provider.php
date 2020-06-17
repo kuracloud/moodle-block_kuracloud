@@ -153,7 +153,15 @@ class provider implements
      * @param context $context Context to delete data from.
      */
     public static function delete_data_for_all_users_in_context(\context $context) {
+        if ($context->contextlevel !== CONTEXT_COURSE) {
+            return;
+        }
 
+        global $DB;
+        $mapping = $DB->get_record('block_kuracloud_courses', array('courseid' => $context->instanceid));
+        if ($mapping) {
+            $DB->delete_records('block_kuracloud_users', array('remote_instanceid' => $mapping->remote_instanceid, 'remote_courseid' => $mapping->remote_courseid));
+        }
     }
 
 
