@@ -14,6 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * kuraCloud privacy provider.
+ *
+ * Implement support for describing and managing private data.
+ *
+ * @package    block_kuracloud
+ * @category   privacy
+ * @copyright  2020 KuraCloud
+ * @author     John Gee
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 namespace block_kuracloud\privacy;
 
 defined('MOODLE_INTERNAL') || die();
@@ -32,7 +44,7 @@ class provider implements
     \core_privacy\local\request\core_userlist_provider {
 
     public static function get_metadata(collection $collection) : collection {
-        // Describe the data we are storing locally
+        // Describe the data we are storing locally.
         $collection->add_database_table(
             'block_kuracloud_users',
             [
@@ -43,7 +55,7 @@ class provider implements
             'privacy:metadata:block_kuracloud_users'
         );
 
-        // Describe the data exported to kuraCloud
+        // Describe the data exported to kuraCloud.
         $collection->add_external_location_link('kuracloud_sync', [
             'firstname' => 'privacy:metadata:kuracloud_sync:firstname',
             'lastname' => 'privacy:metadata:kuracloud_sync:lastname',
@@ -65,7 +77,7 @@ class provider implements
         global $DB;
         $contextlist = new contextlist();
 
-        // Add the contexts for this user still associated with courses
+        // Add the contexts for this user still associated with courses.
         $sql = "SELECT context.id
                   FROM {context} context
             INNER JOIN {course} course on course.id = context.instanceid AND (context.contextlevel = :contextlevel)
@@ -78,8 +90,6 @@ class provider implements
             'userid' => $userid,
         ];
         $contextlist->add_from_sql($sql, $params);
-
-        // We could add the block_kuracloud_users that are no longer associated with a course to the user context????
 
         return $contextlist;
     }
@@ -122,7 +132,7 @@ class provider implements
         $userid = $contextlist->get_user()->id;
         global $DB;
 
-        // Get a map from courseid to the user PII
+        // Get a map from courseid to the user PII.
         $sql = "SELECT kc_courses.courseid, kc_users.userid, kc_users.remote_studentid
                   FROM {block_kuracloud_courses} kc_courses
             INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
@@ -133,9 +143,9 @@ class provider implements
         ];
         $details = $DB->get_records_sql($sql, $params);
 
-        // Export the course related user information
+        // Export the course related user information.
         foreach ($contextlist->get_contexts() as $context) {
-            $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
+            $courseid = $context->instanceid; // Tentative, as also need to check contextlevel.
             if ($context->contextlevel === CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $data = new \stdClass();
                 $data->moodleuserid = $details[$courseid]->userid;
@@ -173,7 +183,7 @@ class provider implements
         global $DB;
         $userid = $contextlist->get_user()->id;
 
-        // Get a map from courseid to the related user record
+        // Get a map from courseid to the related user record.
         $sql = "SELECT kc_courses.courseid, kc_users.id
                   FROM {block_kuracloud_courses} kc_courses
             INNER JOIN {block_kuracloud_users} kc_users on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
@@ -185,7 +195,7 @@ class provider implements
         $details = $DB->get_records_sql($sql, $params);
 
         foreach ($contextlist->get_contexts() as $context) {
-            $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
+            $courseid = $context->instanceid; // Tentative, as also need to check contextlevel.
             if ($context->contextlevel === CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $DB->delete_records('block_kuracloud_users', ['id' => $details[$courseid]->id, 'userid' => $userid]);
             }
