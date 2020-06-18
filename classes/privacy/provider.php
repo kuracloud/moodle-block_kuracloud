@@ -138,8 +138,8 @@ class provider implements
             $courseid = $context->instanceid; // Tentative, also need to check contextlevel.
             if ($context->contextlevel === CONTEXT_COURSE && array_key_exists($courseid, $details)) {
                 $data = new \stdClass();
-                $data->moodle_userid = $details[$courseid]->userid;
-                $data->kuracloud_studentid = $details[$courseid]->remote_studentid;
+                $data->moodleuserid = $details[$courseid]->userid;
+                $data->kuracloudstudentid = $details[$courseid]->remote_studentid;
                 // studentid is within instance and course, but not much value in adding them to exported data.
                 writer::with_context($context)->export_data(['kuraCloud'], $data);
             }
