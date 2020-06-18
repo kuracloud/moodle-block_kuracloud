@@ -30,9 +30,9 @@ php:
 env:
   matrix:
     - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
-    # - DB=mysqli MOODLE_BRANCH=MOODLE_36_STABLE
-    # - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE
-    # - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
