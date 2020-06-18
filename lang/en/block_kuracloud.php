@@ -72,8 +72,8 @@ $string['statusok'] = 'Connection to kuraCloud OK';
 $string['remotecoursedeleted'] = 'Error: The mapped kuraCloud course has been deleted - Please restore the course or map this course to a different kuraCloud course.';
 
 $string['privacy:metadata:block_kuracloud_users'] = 'Information to match Moodle users with kuraCloud users';
-$string['privacy:metadata:block_kuracloud_users:userid'] = 'Moodle User ID';
-$string['privacy:metadata:block_kuracloud_users:remote_studentid'] = 'kuraCloud Student ID';
+$string['privacy:metadata:block_kuracloud_users:userid'] = 'Moodle user id';
+$string['privacy:metadata:block_kuracloud_users:remote_studentid'] = 'kuraCloud student id';
 
 $string['privacy:metadata:kuracloud_sync'] = 'In order to sync kuraCloud with Moodle, user data needs to be sent to kuraCloud';
 $string['privacy:metadata:kuracloud_sync:firstname'] = 'Your first name is sent to kuraCloud to allow a better user experience';
