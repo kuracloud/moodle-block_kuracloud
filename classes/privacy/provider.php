@@ -107,6 +107,9 @@ class provider implements
         global $DB;
         $contextlist = new contextlist();
 
+        // Purge stale data no longer associated wth a course. This is a side-affect, but convenient time as about to export or delete so clean up first.
+        kuracloud_delete_stale_data_for_user($userid);
+
         // Add the contexts for this user still associated with courses.
         $sql = "SELECT context.id
                   FROM {context} context
@@ -211,14 +214,12 @@ class provider implements
      * @param  approved_contextlist $contextlist The approved contexts to export information for.
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
-        $userid = $contextlist->get_user()->id;
-        kuracloud_delete_stale_data_for_user($userid);
-
         if (empty($contextlist->count())) {
             return;
         }
 
         global $DB;
+        $userid = $contextlist->get_user()->id;
 
         // Get a map from courseid to the related user record.
         $sql = "SELECT kc_courses.courseid, kc_users.id
