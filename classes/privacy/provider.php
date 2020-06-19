@@ -38,6 +38,36 @@ use \core_privacy\local\request\approved_contextlist;
 use \core_privacy\local\request\approved_userlist;
 
 
+/**
+ * Delete user data for target user which is no longer associated with a valid course.
+ *
+ * @param  int $userid The target used.
+ */
+function kuracloud_delete_stale_data_for_user(int $userid) {
+    global $DB;
+
+    // Get list of stale records, which are no longer associated with a course.
+    $sql = "SELECT kc_users.id
+              FROM {block_kuracloud_users} kc_users
+         LEFT JOIN {block_kuracloud_courses} kc_courses on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
+         LEFT JOIN {course} c on c.id = kc_courses.courseid
+             WHERE c.id IS NULL AND kc_users.userid = :userid
+    ";
+    $params = [
+        'userid' => $userid,
+    ];
+    $ids = $DB->get_fieldset_sql($sql, $params);
+
+    if (!empty($ids)) {
+        list($idinsql, $idinparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
+        // Putting the userid in again for extra safety.
+        $params = array_merge(['userid' => $userid], $idinparams);
+        $sql = "userid = :userid AND id {$idinsql}";
+        $DB->delete_records_select('block_kuracloud_users', $sql, $params);
+    }
+}
+
+
 class provider implements
     \core_privacy\local\metadata\provider,
     \core_privacy\local\request\plugin\provider,
@@ -178,45 +208,17 @@ class provider implements
     /**
      * Delete all user data for the specified user, in the specified contexts.
      *
-     * @param  int $userid The target used.
-     */
-    private static function my_delete_stale_data_for_user(int $userid) {
-        global $DB;
-
-        // Get list of stale records, which are no longer associated with a course.
-        $sql = "SELECT kc_users.id
-                  FROM {block_kuracloud_users} kc_users
-             LEFT JOIN {block_kuracloud_courses} kc_courses on kc_users.remote_instanceid = kc_courses.remote_instanceid AND kc_users.remote_courseid = kc_courses.remote_courseid
-             LEFT JOIN {course} c on c.id = kc_courses.courseid
-                 WHERE c.id IS NULL AND kc_users.userid = :userid
-        ";
-        $params = [
-            'userid' => $userid,
-        ];
-        $ids = $DB->get_fieldset_sql($sql, $params);
-
-        if (!empty($ids)) {
-            list($idinsql, $idinparams) = $DB->get_in_or_equal($ids, SQL_PARAMS_NAMED);
-            // Putting the userid in again for extra safety.
-            $params = array_merge(['userid' => $userid], $idinparams);
-            $sql = "userid = :userid AND id {$idinsql}";
-            $DB->delete_records_select('block_kuracloud_users', $sql, $params);
-        }
-    }
-
-
-    /**
-     * Delete all user data for the specified user, in the specified contexts.
-     *
      * @param  approved_contextlist $contextlist The approved contexts to export information for.
      */
     public static function delete_data_for_user(approved_contextlist $contextlist) {
+        $userid = $contextlist->get_user()->id;
+        kuracloud_delete_stale_data_for_user($userid);
+
         if (empty($contextlist->count())) {
             return;
         }
 
         global $DB;
-        $userid = $contextlist->get_user()->id;
 
         // Get a map from courseid to the related user record.
         $sql = "SELECT kc_courses.courseid, kc_users.id
@@ -235,8 +237,6 @@ class provider implements
                 $DB->delete_records('block_kuracloud_users', ['id' => $details[$courseid]->id, 'userid' => $userid]);
             }
         }
-
-        my_delete_stale_data_for_user($userid);
     }
 
 
