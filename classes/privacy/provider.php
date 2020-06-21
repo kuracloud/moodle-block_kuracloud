@@ -73,6 +73,12 @@ class provider implements
     \core_privacy\local\request\plugin\provider,
     \core_privacy\local\request\core_userlist_provider {
 
+    /**
+     * Describe the user data being stored and exported.
+     *
+     * @param   collection    $collection
+     * @return  collection
+     */
     public static function get_metadata(collection $collection) : collection {
         // Describe the data we are storing locally.
         $collection->add_database_table(
