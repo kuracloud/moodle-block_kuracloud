@@ -70,3 +70,13 @@ $string['confirmgradesync'] = 'Sync grades from kuraCloud?';
 $string['gradesynccomplete'] = 'All grades have been synced';
 $string['statusok'] = 'Connection to kuraCloud OK';
 $string['remotecoursedeleted'] = 'Error: The mapped kuraCloud course has been deleted - Please restore the course or map this course to a different kuraCloud course.';
+
+$string['privacy:metadata:block_kuracloud_users'] = 'Information to match Moodle users with kuraCloud users';
+$string['privacy:metadata:block_kuracloud_users:userid'] = 'Moodle user id';
+$string['privacy:metadata:block_kuracloud_users:remote_studentid'] = 'kuraCloud student id';
+
+$string['privacy:metadata:kuracloud_sync'] = 'In order to sync kuraCloud with Moodle, user data needs to be sent to kuraCloud';
+$string['privacy:metadata:kuracloud_sync:firstname'] = 'Your first name is sent to kuraCloud to allow a better user experience';
+$string['privacy:metadata:kuracloud_sync:lastname'] = 'Your last name is sent to kuraCloud to allow a better user experience';
+$string['privacy:metadata:kuracloud_sync:idnumber'] = 'Your Moodle id number is sent to help match up with your Moodle account, and help manage student accounts in kuraCloud';
+$string['privacy:metadata:kuracloud_sync:email'] = 'Your email address is used to create your account and to login to kuraCloud, and for emails from kuraCloud';

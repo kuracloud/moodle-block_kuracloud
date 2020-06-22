@@ -1,4 +1,9 @@
-# https://moodlerooms.github.io/moodle-plugin-ci/TravisFileExplained.html
+# https://blackboard-open-source.github.io/moodle-plugin-ci/
+# https://libraries.io/packagist/blackboard-open-source%2Fmoodle-plugin-ci
+
+# Issues with mustache test on xenial, stick with trusty until fixes land in moodle-plugin-ci
+# https://github.com/blackboard-open-source/moodle-plugin-ci/issues/91
+dist: trusty
 
 language: php
 
@@ -7,10 +12,10 @@ sudo: false
 addons:
   firefox: "47.0.1"
   postgresql: "9.3"
-  apt:
-    packages:
-      - oracle-java8-installer
-      - oracle-java8-set-default
+
+services:
+  - mysql
+  - postgresql
 
 cache:
   directories:
@@ -24,16 +29,17 @@ php:
 
 env:
   matrix:
-    - DB=mysqli MOODLE_BRANCH=MOODLE_33_STABLE
-    - DB=mysqli MOODLE_BRANCH=MOODLE_34_STABLE
     - DB=mysqli MOODLE_BRANCH=MOODLE_35_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_37_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_38_STABLE
+    - DB=mysqli MOODLE_BRANCH=MOODLE_39_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - nvm install 8.9
-  - nvm use 8.9
+  - nvm install 14.4.0
+  - nvm use 14.4.0
   - cd ../..
-  - composer create-project -n --no-dev --prefer-dist moodlerooms/moodle-plugin-ci ci ^2
+  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
