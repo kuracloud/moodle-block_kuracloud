@@ -3,7 +3,7 @@
 A block that allows a kuraCloud course to be mapped to a Moodle course. Student accounts are synchronised from Moodle to kuraCloud and grades are synchronised back from kuraCloud to Moodle.
 
 ## Requirements
-* Moodle 3.1 or higher.
+* Moodle 3.5 or higher.
 * A kuraCloud API key and API URL.
 
 ## Setup
