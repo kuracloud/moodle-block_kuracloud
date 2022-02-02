@@ -25,7 +25,7 @@
 
 namespace block_kuracloud;
 
-defined('MOODLE_INTERNAL') || die();
+// defined('MOODLE_INTERNAL') || die();
 
 /**
  * A mapped kuraCloud course

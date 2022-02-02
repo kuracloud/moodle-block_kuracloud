@@ -27,7 +27,7 @@ namespace block_kuracloud;
 
 define('HTTP_OK', 200);
 
-defined('MOODLE_INTERNAL') || die();
+// defined('MOODLE_INTERNAL') || die();
 
 /**
  * kuraCloud API abstraction
