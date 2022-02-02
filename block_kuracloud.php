@@ -24,8 +24,6 @@
  */
 
 
-// defined('MOODLE_INTERNAL') || die();
-
 /**
  * kuraCloud block
  *
