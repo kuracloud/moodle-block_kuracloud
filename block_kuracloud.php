@@ -105,16 +105,16 @@ class block_kuracloud extends block_base {
     /**
      * User can only add block if there's a valid endpoint
      *
-     * @param page $this->page Moodle page object
+     * @param page $page Moodle page object
      * @return boolean
      */
-    public function user_can_addto($this->page) {
+    public function user_can_addto($page) {
 
         if (empty(\block_kuracloud\endpoints::get_all())) {
             return false;
         }
 
-        return parent::user_can_addto($this->page);
+        return parent::user_can_addto($page);
     }
 
     /**
